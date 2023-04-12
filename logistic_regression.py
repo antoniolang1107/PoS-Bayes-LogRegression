@@ -3,24 +3,23 @@ import pandas as pd
 
 def train_logistic_regression(train_data):
     epoch_limit = 5
-
-    num_samples, num_features = train_data.shape
-
-    weights = np.zeros((num_features,1))
+    parsed_data = parse_dict(train_data)
+    num_samples, num_features = parsed_data.shape
+    weights = np.zeros((num_features-1,)) # accounts for "label" column
     bias = 0
 
-    normalized_data = normalize_data(train_data[:,len(train_data)-1:])
-    labels = train_data[:,-1]
+    normalized_data = normalize_data(parsed_data)
+    normalized_data = normalized_data.fillna(0)
 
     for _ in range(epoch_limit):
-        for index, sample in enumerate(normalized_data):
-            prediction = sigmoid_activation(sample, weights, bias)
-            weight_update, bias_update = update_values(sample, labels[index],prediction)
+        for sample in normalized_data.iterrows():
+            sample_as_list = list(sample[1])
+            label = sample_as_list.pop()
+            prediction = sigmoid_activation(sample_as_list, weights, bias)
+            weight_update, bias_update = update_values(sample_as_list, label, prediction)
 
             weights -= weight_update
             bias -= bias_update
-
-
     return {"weights": weights,
             "bias": bias}
 
@@ -45,7 +44,7 @@ def sigmoid_activation(sample, weight, bias):
 
 def update_values(sample, label, prediction):
     learning_rate = 0.05
-    return learning_rate*(prediction-label)*sample,\
+    return learning_rate*np.dot(np.array(sample).T, (prediction-label)),\
             learning_rate*(prediction-label)
 
 def normalize_data(samples):
@@ -75,6 +74,6 @@ if __name__ == "__main__":
             ({'welcome': 1, 'this':1, 'welcome':1, 'my':1, 'test':1}, 0)]
     test_df = parse_dict(test_data)
     
-    test_model = {"weights":[1,2,-3,0.1, 0.5, 0, -0.6, 2, -0.3, -0.8, -1], "bias":2.5}
-    # train_logistic_regression()
-    print(f"log acc: {test_logistic_regression(test_df, test_model)}")
+    # test_model = {"weights":[1,2,-3,0.1, 0.5, 0, -0.6, 2, -0.3, -0.8, -1], "bias":2.5}
+    model = train_logistic_regression(data)
+    print(f"log acc: {test_logistic_regression(test_df, model)}")
