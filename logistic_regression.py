@@ -56,7 +56,15 @@ def normalize_data(samples):
     return samples
 
 def parse_dict(dicts_list):
-    pass
+    samples = []
+    labels = []
+    for document in dicts_list:
+        samples.append(document[0])
+        labels.append(document[1])
+    df = pd.DataFrame(samples)
+    df = df.fillna(0)
+    df['label'] = labels
+    return df
 
 if __name__ == "__main__":
     data = [({'hello': 1, 'this':1, 'is':1, 'my':1, 'test':1}, 1),
@@ -65,14 +73,8 @@ if __name__ == "__main__":
             ({'pepperoni': 1, 'welcome':1, 'to':1, 'my':1, 'spam':1}, 0),
             ({'hello': 1, 'apples':1, 'is':1, 'my':1, 'test':1}, 1),
             ({'welcome': 1, 'this':1, 'welcome':1, 'my':1, 'test':1}, 0)]
-    samples = []
-    labels = []
-    for document in test_data:
-        samples.append(document[0])
-        labels.append(document[1])
-    test_df = pd.DataFrame(samples)
-    test_df = test_df.fillna(0)
-    test_df['label'] = labels
+    test_df = parse_dict(test_data)
+    
     test_model = {"weights":[1,2,-3,0.1, 0.5, 0, -0.6, 2, -0.3, -0.8, -1], "bias":2.5}
     # train_logistic_regression()
     print(f"log acc: {test_logistic_regression(test_df, test_model)}")
